@@ -141,6 +141,7 @@ module EndOfLifeHooks
     error_if.is_not_a_number('eoesWarnThreshold')
     error_if.is_not_an_array('identifiers')
     error_if.is_not_an_array('releases')
+    error_if.not_ordered_by_release_cycles('releases')
 
     product.data['identifiers'].each { |identifier|
       error_if.is_not_an_identifier('identifiers', identifier)
@@ -313,6 +314,24 @@ module EndOfLifeHooks
       IdentifierToUrl.new.render(hash)
     rescue => e
       declare_error(property, hash, e)
+    end
+
+    def not_ordered_by_release_cycles(property)
+      releases = @data[property]
+
+      previous_release_cycle = nil
+      previous_release_date = nil
+      releases.each do |release|
+        release_cycle = release['releaseCycle']
+        release_date = release['releaseDate']
+
+        if previous_release_date and previous_release_date < release_date
+          declare_error(property, release_cycle, "expecting release to be before #{previous_release_cycle}")
+        end
+
+        previous_release_cycle = release_cycle
+        previous_release_date = release_date
+      end
     end
 
     def is_url_invalid(property)
