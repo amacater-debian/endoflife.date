@@ -322,11 +322,13 @@ module EndOfLifeHooks
       previous_release_cycle = nil
       previous_release_date = nil
       releases.each do |release|
+        next if release['outOfOrder']
+
         release_cycle = release['releaseCycle']
         release_date = release['releaseDate']
 
         if previous_release_date and previous_release_date < release_date
-          declare_error(property, release_cycle, "expecting release to be before #{previous_release_cycle}")
+          declare_error(property, release_cycle, "expecting release (released on #{release_date}) to be before #{previous_release_cycle} (released on #{previous_release_date})")
         end
 
         previous_release_cycle = release_cycle
